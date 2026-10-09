@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>{{ content.title }}</h1>
+
+    {% for name in ['teasers', 'footer_teasers'] %}
+        <h2>{{ name }}</h2>
+        <section id="{{ name }}">
+            {% for teaser in attribute(content, name) %}
+                {% set image = teaser.mediaId ? sulu_resolve_media(teaser.mediaId, app.request.locale) : null %}
+                <article data-title="{{ teaser.title }}" data-description="{{ teaser.description }}" data-media-id="{{ teaser.mediaId }}">
+                    {% if image %}<img src="{{ image.url }}" alt="{{ image.title }}" width="60">{% endif %}
+                    <strong>{{ teaser.title }}</strong>
+                    <p>{{ teaser.description }}</p>
+                </article>
+            {% endfor %}
+        </section>
+    {% endfor %}
+{% endblock %}

@@ -16,4 +16,29 @@ services:
   database:
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pChangeMe"]
+      interval: 2s
+      retries: 30
 ###< doctrine/doctrine-bundle ###
+
+  # PHP for running the reproducer without a local PHP installation
+  php: &php
+    build: docker/php
+    image: sulu-teaser-reproducer-php
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: "mysql://root:ChangeMe@database:3306/su_myapp?serverVersion=8.4.7&charset=utf8mb4"
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      PHP_CLI_SERVER_WORKERS: 4
+    depends_on:
+      database:
+        condition: service_healthy
+
+  # admin and website on http://localhost:8000
+  web:
+    <<: *php
+    command: php -S 0.0.0.0:8000 -t public docker/php/router.php
+    ports:
+      - "8000:8000"
